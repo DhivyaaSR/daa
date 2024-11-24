@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX_LOCATIONS 100 
+#define INF INT_MAX     
+
+int findMinDistance(int distances[], int visited[], int n) {
+    int min = INF, minIndex = -1;
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i] && distances[i] < min) {
+            min = distances[i];
+            minIndex = i;
+        }
+    }
+
+    return minIndex;
+}
+
+void dijkstra(int graph[MAX_LOCATIONS][MAX_LOCATIONS], int n, int start, int end) {
+    int distances[MAX_LOCATIONS];  
+    int visited[MAX_LOCATIONS];    
+    int previous[MAX_LOCATIONS];  
+
+
+    for (int i = 0; i < n; i++) {
+        distances[i] = INF;
+        visited[i] = 0;
+        previous[i] = -1;
+    }
+    distances[start] = 0;
+
+    for (int count = 0; count < n - 1; count++) {
+        int u = findMinDistance(distances, visited, n);
+
+        if (u == -1 || distances[u] == INF) break;
+
+        visited[u] = 1;
+
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && graph[u][v] && distances[u] != INF &&
+                distances[u] + graph[u][v] < distances[v]) {
+                distances[v] = distances[u] + graph[u][v];
+                previous[v] = u;
+            }
+        }
+    }
+
+    if (distances[end] == INF) {
+        printf("No path exists from %d to %d\n", start, end);
+    } else {
+        printf("Shortest path from %d to %d: ", start, end);
+
+        int path[MAX_LOCATIONS];
+        int pathIndex = 0;
+        for (int at = end; at != -1; at = previous[at]) {
+            path[pathIndex++] = at;
+        }
+
+        for (int i = pathIndex - 1; i >= 0; i--) {
+            printf("%d ", path[i]);
+            if (i > 0) printf("-> ");
+        }
+        printf("\nTotal distance: %d\n", distances[end]);
+    }
+}
+
+int main() {
+    int graph[MAX_LOCATIONS][MAX_LOCATIONS] = {0};
+    int n, e;
+  
+    printf("Enter the number of locations: ");
+    scanf("%d", &n);
+    printf("Enter the number of roads: ");
+    scanf("%d", &e);
+
+    printf("Enter the roads (start end weight):\n");
+    for (int i = 0; i < e; i++) {
+        int start, end, weight;
+        scanf("%d %d %d", &start, &end, &weight);
+        graph[start][end] = weight;
+        graph[end][start] = weight; // For undirected graph
+    }
+
+    int start, end;
+    printf("Enter the start and end locations: ");
+    scanf("%d %d", &start, &end);
+
+    dijkstra(graph, n, start, end);
+
+    return 0;
+}
